@@ -54,13 +54,18 @@ io.on('connection', (socket) => {
       status: status
     })
     .then(function (response) {
-      io.emit('status_changed', {status: response.data.data.status});
+      io.emit('status_changed', {delivery: response.data.data});
     })
     .catch(function (error) {
       console.log(error);
     });
 
   });
+
+  socket.on("location_changed", (location, id) => {
+      io.emit('location_changed', {lat: location.lat, lng: location.lng});
+  })
+
 });
 
 app.use("/api/packages", packageRouter);

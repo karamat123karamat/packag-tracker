@@ -16,12 +16,23 @@ const getDeliveryById = async (id) => {
 
 const updateDeliveryStatus = async (id, status) => {
     var date_time = new Date();
-    
-    if (["in-transit", "failed"].includes("status")) {
-        return await Delivery.findByIdAndUpdate(id, {status: status, end_time: date_time}, {new: true}).populate("package_id");
-    } else {
-        return await Delivery.findByIdAndUpdate(id, {status: status, picked_up: date_time, start_time: date_time}, {new: true}).populate("package_id");
+
+    const delivery = await Delivery.findById(id).populate("package_id")
+
+    if (delivery.status == "open" && status == "picked-up") {
+        delivery.pickup_time = date_time
     }
+    
+    if (delivery.status == "picked-up" && status == "in-transit") {
+        delivery.start_time =  date_time
+    }
+    
+    if (delivery.status == "in-transit" && (status == "delivered" || status == "failed")) {
+        delivery.end_time = date_time
+    }
+    
+    delivery.status = status
+    return await delivery.save();
 };
 
 const updateDelivery = async (id, delivery) => {
